@@ -12,6 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::io;
+use std::io::prelude::*;
+
+use itertools::Itertools;
+
 fn main() {
-    println!("Hello, world!");
+    let nums: std::vec::Vec<u32> = io::BufReader::new(io::stdin())
+        .lines()
+        .map(Result::unwrap)
+        .map(|s| s.parse().unwrap())
+        .collect();
+
+    // Part 1
+    println!(
+        "{}",
+        nums.iter().tuple_windows().filter(|(a, b)| a < b).count()
+    );
+
+    // Part 2
+    println!(
+        "{}",
+        nums.iter()
+            .tuple_windows()
+            .map(|(x, y, z)| x + y + z)
+            .tuple_windows()
+            .filter(|(a, b)| a < b)
+            .count()
+    );
 }

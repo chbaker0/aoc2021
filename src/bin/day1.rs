@@ -14,8 +14,25 @@
 
 use std::io;
 use std::io::prelude::*;
+use std::iter::{IntoIterator, Iterator};
 
 use itertools::Itertools;
+
+fn part1(nums: impl IntoIterator<Item = u32>) -> usize {
+    nums.into_iter()
+        .tuple_windows()
+        .filter(|(a, b)| a < b)
+        .count()
+}
+
+fn part2(nums: impl IntoIterator<Item = u32>) -> usize {
+    nums.into_iter()
+        .tuple_windows()
+        .map(|(x, y, z)| x + y + z)
+        .tuple_windows()
+        .filter(|(a, b)| a < b)
+        .count()
+}
 
 fn main() {
     let nums: std::vec::Vec<u32> = io::BufReader::new(io::stdin())
@@ -24,20 +41,23 @@ fn main() {
         .map(|s| s.parse().unwrap())
         .collect();
 
-    // Part 1
-    println!(
-        "{}",
-        nums.iter().tuple_windows().filter(|(a, b)| a < b).count()
-    );
+    println!("{}", part1(nums.iter().copied()));
+    println!("{}", part2(nums.iter().copied()));
+}
 
-    // Part 2
-    println!(
-        "{}",
-        nums.iter()
-            .tuple_windows()
-            .map(|(x, y, z)| x + y + z)
-            .tuple_windows()
-            .filter(|(a, b)| a < b)
-            .count()
-    );
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    static INPUT: [u32; 10] = [199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(7, part1(INPUT));
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(5, part2(INPUT));
+    }
 }

@@ -29,25 +29,44 @@ fn parse(num: &str) -> Vec<bool> {
     res
 }
 
+fn to_int(num: &[bool]) -> u32 {
+    let mut i = 0;
+    for d in num.iter() {
+        i = i << 1;
+        if *d {
+            i += 1;
+        }
+    }
+    i
+}
+
+fn count_bit(nums: &[Vec<bool>], pos: usize) -> Option<usize> {
+    let mut count = 0;
+    for n in nums {
+        if pos >= n.len() {
+            return None;
+        }
+        if n[pos] {
+            count += 1;
+        }
+    }
+    Some(count)
+}
+
 fn gamma_epsilon(nums: &[Vec<bool>]) -> (u32, u32) {
     let mut gamma = 0;
     let mut epsilon = 0;
-    'outer: for pos in 0.. {
+    for pos in 0.. {
         gamma = gamma << 1;
         epsilon = epsilon << 1;
-        let mut count = 0;
-        for n in nums {
-            if pos >= n.len() {
-                break 'outer;
+        if let Some(count) = count_bit(nums, pos) {
+            if count > nums.len() / 2 {
+                gamma += 1;
+            } else {
+                epsilon += 1;
             }
-            if n[pos] {
-                count += 1;
-            }
-        }
-        if count > nums.len() / 2 {
-            gamma += 1;
         } else {
-            epsilon += 1;
+            break;
         }
     }
     (gamma >> 1, epsilon >> 1)
@@ -59,12 +78,34 @@ fn part1(nums: &[String]) -> u32 {
     gamma * epsilon
 }
 
+fn rating(mut nums: Vec<Vec<bool>>, criteria: bool) -> u32 {
+    let mut pos = 0;
+    while let Some(count) = count_bit(&nums, pos) {
+        if nums.len() <= 1 {
+            break;
+        }
+        let keep = criteria != ((count * 2) >= nums.len());
+        nums.retain(|n| n[pos] == keep);
+        pos += 1;
+    }
+    assert_eq!(1, nums.len());
+    to_int(&nums[0])
+}
+
+fn part2(nums: &[String]) -> u32 {
+    let nums: Vec<_> = nums.iter().map(|s| parse(&s)).collect();
+    let o2 = rating(nums.clone(), true);
+    let co2 = rating(nums, false);
+    o2 * co2
+}
+
 fn main() {
     let lines: Vec<String> = io::BufReader::new(io::stdin())
         .lines()
         .map(Result::unwrap)
         .collect();
     println!("{}", part1(&lines));
+    println!("{}", part2(&lines));
 }
 
 #[cfg(test)]
@@ -80,5 +121,11 @@ mod tests {
     fn test_part1() {
         let strs: Vec<_> = INPUT.iter().map(|s| String::from(*s)).collect();
         assert_eq!(198, part1(&strs));
+    }
+
+    #[test]
+    fn test_part2() {
+        let strs: Vec<_> = INPUT.iter().map(|s| String::from(*s)).collect();
+        assert_eq!(230, part2(&strs));
     }
 }

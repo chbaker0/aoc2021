@@ -78,18 +78,7 @@ impl Line {
     }
 }
 
-fn part1(lines: impl IntoIterator<Item = Line>) -> usize {
-    let mut overlaps = HashMap::<Point, u32>::new();
-    for l in lines.into_iter().filter(Line::is_not_diagonal) {
-        for p in l.points() {
-            let e = overlaps.entry(p).or_insert(0);
-            *e += 1;
-        }
-    }
-    overlaps.values().filter(|e| **e >= 2).count()
-}
-
-fn part2(lines: impl IntoIterator<Item = Line>) -> usize {
+fn overlaps(lines: impl IntoIterator<Item = Line>) -> usize {
     let mut overlaps = HashMap::<Point, u32>::new();
     for l in lines.into_iter() {
         for p in l.points() {
@@ -105,6 +94,9 @@ fn main() {
         .lines()
         .map(|l| Line::parse(&l.unwrap()))
         .collect();
-    println!("{}", part1(lines.iter().copied()));
-    println!("{}", part2(lines.iter().copied()));
+    println!(
+        "{}",
+        overlaps(lines.iter().filter(|l| l.is_not_diagonal()).copied())
+    );
+    println!("{}", overlaps(lines.iter().copied()));
 }

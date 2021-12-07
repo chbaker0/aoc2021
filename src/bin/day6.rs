@@ -12,29 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::default::Default;
 use std::io;
 use std::io::prelude::*;
-use std::iter::{self, IntoIterator, Iterator};
+use std::iter::{IntoIterator, Iterator};
 use std::vec::Vec;
 
-fn part1(times: impl IntoIterator<Item = u8>) -> usize {
-    let mut counts = [0; 9];
+use num::BigUint;
+
+fn simulate(times: impl IntoIterator<Item = u8>, cycles: usize) -> BigUint {
+    let mut counts: [BigUint; 9] = Default::default();
     for t in times.into_iter() {
         assert!(t < 9);
-        counts[t as usize] += 1;
+        counts[t as usize] += 1u32;
     }
 
-    for _day in 0..80 {
-        let mut new_counts = [0; 9];
+    for _day in 0..cycles {
+        let mut new_counts: [BigUint; 9] = Default::default();
         // Spawn new fish
-        new_counts[8] = counts[0];
-        new_counts[6] = counts[0];
+        new_counts[8] = counts[0].clone();
+        new_counts[6] = counts[0].clone();
 
         // Decrement other timers
         for i in 0..8 {
-            new_counts[i] += counts[i + 1];
+            new_counts[i] += counts[i + 1].clone();
         }
 
         counts = new_counts;
@@ -50,5 +51,6 @@ fn main() {
         .unwrap()
         .unwrap();
     let times: Vec<u8> = input.split(',').map(|s| s.parse().unwrap()).collect();
-    println!("{}", part1(times.iter().copied()));
+    println!("{}", simulate(times.iter().copied(), 80));
+    println!("{}", simulate(times.iter().copied(), 256));
 }

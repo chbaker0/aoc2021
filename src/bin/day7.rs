@@ -12,38 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::default::Default;
 use std::io;
 use std::io::prelude::*;
-use std::iter::{IntoIterator, Iterator};
+use std::iter::Iterator;
 use std::vec::Vec;
 
 const MAX_POSITION: usize = 2000;
 
-fn part1(positions: &[u16]) -> u64 {
+fn calc(positions: &[u16], inc: bool) -> u64 {
     let mut costs = [0u64; MAX_POSITION];
     for pos in positions.iter() {
         let pos = *pos as usize;
         assert!(pos < MAX_POSITION, "{} is too large", pos);
-        for (dist, target) in (pos..MAX_POSITION).enumerate() {
-            costs[target] += dist as u64;
-        }
-        for (dist, target) in (0..pos+1).rev().enumerate() {
-            costs[target] += dist as u64;
+        for (dist, target) in (pos..MAX_POSITION)
+            .enumerate()
+            .chain((0..pos + 1).rev().enumerate())
+        {
+            let dist = dist as u64;
+            if inc {
+                costs[target] += dist * (dist + 1) / 2;
+            } else {
+                costs[target] += dist;
+            }
         }
     }
 
-    let (min_pos, min_cost) = costs.iter().copied().enumerate().min_by_key(|(_p, c)| *c).unwrap();
+    let (min_pos, min_cost) = costs
+        .iter()
+        .copied()
+        .enumerate()
+        .min_by_key(|(_p, c)| *c)
+        .unwrap();
     println!("min_pos = {}", min_pos);
     min_cost
 }
 
 fn main() {
     let input = io::BufReader::new(io::stdin())
-    .lines()
-    .next()
-    .unwrap()
-    .unwrap();
+        .lines()
+        .next()
+        .unwrap()
+        .unwrap();
     let positions: Vec<u16> = input.split(',').map(|s| s.parse().unwrap()).collect();
-    println!("{}", part1(&positions));
+    println!("{}", calc(&positions, false));
+    println!("{}", calc(&positions, true));
 }

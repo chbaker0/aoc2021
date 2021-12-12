@@ -52,7 +52,7 @@ impl<'a> Heightmap<'a> {
     fn risk(&self, r: usize, c: usize) -> Option<u8> {
         let h = self.at(r as isize, c as isize).unwrap();
         for n in self.neighbors(r, c) {
-            if n < h {
+            if n <= h {
                 return None;
             }
         }
@@ -65,7 +65,6 @@ fn part1(map: &Heightmap) -> u64 {
     for r in 0..map.rows {
         for c in 0..map.cols {
             sum += map.risk(r, c).unwrap_or(0) as u64;
-            print!("{} ", sum);
         }
     }
     sum

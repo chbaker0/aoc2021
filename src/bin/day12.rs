@@ -39,54 +39,47 @@ fn read_graph<'a>(lines: impl Iterator<Item = String>) -> MultiMap<Cave, Cave> {
         .collect()
 }
 
-fn dfs_count(map: &MultiMap<Cave, Cave>, can_visit_twice: bool) -> usize {
-    let mut stack: Vec<(Cave, bool, bool)> = Vec::new();
-    let mut visited: HashMap<Cave, usize> = HashMap::new();
-
-    let mut num_paths = 0;
-
-    stack.push((Cave("start".to_string()), false, can_visit_twice));
-
-    while let Some((cur, done, mut can_visit_twice)) = stack.pop() {
-        let cnt = visited.entry(cur.clone()).or_insert(0);
-        if cur.0 == "end" {
-            num_paths += 1;
-            continue;
-        } else if done {
-            *cnt -= 1;
-            continue;
-        } else {
-            stack.push((cur.clone(), true, false));
-        }
-
-        if cur.is_small() && *cnt == 1 {
-            if cur.0 != "start" && can_visit_twice {
-                can_visit_twice = false;
-            } else {
-                stack.pop();
-                continue;
-            }
-        } else if cur.is_small() && *cnt == 2 {
-            stack.pop();
-            continue;
-        }
-
-        *cnt += 1;
-
-        for dst in map.get_vec(&cur).unwrap().iter() {
-            stack.push((dst.clone(), false, can_visit_twice));
-        }
+fn dfs_count(
+    map: &MultiMap<Cave, Cave>,
+    cur: Cave,
+    visited: &mut HashMap<Cave, usize>,
+    mut can_visit_twice: bool,
+) -> usize {
+    if cur.0 == "end" {
+        return 1;
     }
 
-    num_paths
+    let cnt = visited.entry(cur.clone()).or_insert(0);
+    if cur.is_small() && *cnt == 1 {
+        if cur.0 != "start" && can_visit_twice {
+            can_visit_twice = false;
+        } else {
+            return 0;
+        }
+    } else if cur.is_small() && *cnt == 2 {
+        return 0;
+    }
+
+    *cnt += 1;
+
+    let result = map
+        .get_vec(&cur)
+        .unwrap()
+        .iter()
+        .map(|dst| dfs_count(map, dst.clone(), visited, can_visit_twice))
+        .sum();
+    *visited.get_mut(&cur).unwrap() -= 1;
+    result
 }
 
 fn part1(map: &MultiMap<Cave, Cave>) -> usize {
-    dfs_count(map, false)
+    let mut visited: HashMap<Cave, usize> = HashMap::new();
+    dfs_count(map, Cave("start".to_string()), &mut visited, false)
 }
 
 fn part2(map: &MultiMap<Cave, Cave>) -> usize {
-    dfs_count(map, true)
+    let mut visited: HashMap<Cave, usize> = HashMap::new();
+    dfs_count(map, Cave("start".to_string()), &mut visited, true)
 }
 
 fn main() {
